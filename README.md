@@ -10,11 +10,6 @@ This repository contains a Convolutional Neural Network (CNN) model for classify
 
 - [Project Details](#project-details)
 - [Dataset](#dataset)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Training](#training)
-- [Model Evaluation](#model-evaluation)
-- [Results](#results)
 - [Contributing](#contributing)
 - [License](#license)
 
