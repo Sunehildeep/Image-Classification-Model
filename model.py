@@ -3,16 +3,17 @@ from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropou
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import ModelCheckpoint
 import cv2
 import numpy as np
+
 
 class Model():
     def __init__(self):
         print('Initializing model...')
         self.model = Sequential()
-        self.model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)))
+        self.model.add(Conv2D(32, (3, 3), activation='relu',
+                       input_shape=(224, 224, 3)))
         self.model.add(MaxPooling2D((2, 2)))
         self.model.add(Conv2D(64, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D((2, 2)))
@@ -25,21 +26,33 @@ class Model():
         self.model.add(Dense(512, activation='relu'))
         self.model.add(Dense(22, activation='softmax'))
 
-        self.model.compile(optimizer=Adam(learning_rate=0.0001), loss=SparseCategoricalCrossentropy(), metrics=[SparseCategoricalAccuracy()])
+        self.model.compile(optimizer=Adam(learning_rate=0.0001), loss=SparseCategoricalCrossentropy(
+        ), metrics=[SparseCategoricalAccuracy()])
         self.model.summary()
 
-    def train(self, train_data, train_labels, val_data, val_labels, epochs, batch_size=256):
-        print('Training...')
-        checkpoint = ModelCheckpoint('model.h5', monitor='val_loss', save_best_only=True, verbose=1)
-        
-        # Create data generators for batch processing
-        train_datagen = ImageDataGenerator(rescale=1.0/255.0)  # Normalize pixel values
-        val_datagen = ImageDataGenerator(rescale=1.0/255.0)
+    def train(self, train_generator, val_generator, epochs):
+        # Check if a model.h5 file exists
+        print('Checking for existing model...')
+        model_exists = False
+        try:
+            self.model.load_weights('model.h5')
+            model_exists = True
+            print('Existing model found...')
+        except:
+            print('No existing model found...')
+            pass
 
-        train_generator = train_datagen.flow(train_data, train_labels, batch_size=batch_size)
-        val_generator = val_datagen.flow(val_data, val_labels, batch_size=batch_size)
+        # If a model exists, train it
+        if model_exists:
+            print('Training existing model...')
+        else:
+            print('Training new model...')
 
-        self.model.fit(train_generator, validation_data=val_generator, epochs=epochs, callbacks=[checkpoint])
+        checkpoint = ModelCheckpoint(
+            'model.h5', monitor='val_loss', save_best_only=True, verbose=1)
+
+        self.model.fit(train_generator, validation_data=val_generator,
+                       epochs=epochs, callbacks=[checkpoint])
 
     def predict(self, image):
         print('Predicting...')
@@ -50,7 +63,11 @@ class Model():
         image = np.expand_dims(image, axis=0)  # Add a batch dimension
 
         return self.model.predict(image)
-    
+
+    def evaluate(self, test_generator):
+        print('Evaluating...')
+        self.model.evaluate(test_generator)
+
     def load(self, path):
         self.model.load_weights(path)
 

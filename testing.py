@@ -7,6 +7,5 @@ if __name__ == "__main__":
     model = Model()
     model.load('model.h5')
     pred = model.predict('test.jpg')
-    print(pred)
     pred = pred.argmax()
     print(categories[pred])
